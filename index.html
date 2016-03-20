@@ -15,7 +15,7 @@
 	function log() {
 
 	}
-	
+
 	function _h ( f, c ) {
 		return function () {
 			var args = c.apply( this, arguments ) || arguments;
@@ -25,27 +25,22 @@
 
 	WebGLRenderingContext.prototype.bindBuffer = _h( WebGLRenderingContext.prototype.bindBuffer, function () {
 		log( 'bindBuffer', arguments )
-		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.useProgram = _h( WebGLRenderingContext.prototype.useProgram, function () {
 		log( 'useProgram', arguments )
-		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.getAttribLocation = _h( WebGLRenderingContext.prototype.getAttribLocation, function () {
 		log( 'getAttribLocation', arguments )
-		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.vertexAttribPointer = _h( WebGLRenderingContext.prototype.vertexAttribPointer, function () {
 		log( 'vertexAttribPointer', arguments )
-		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.enableVertexAttribArray = _h( WebGLRenderingContext.prototype.enableVertexAttribArray, function () {
 		log( 'enableVertexAttribArray', arguments )
-		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.drawArrays = _h( WebGLRenderingContext.prototype.drawArrays, function () {
@@ -55,7 +50,7 @@
 	} );
 
 	WebGLRenderingContext.prototype.drawElements = _h( WebGLRenderingContext.prototype.drawElements, function () {
-		console.log( 'drawElements', arguments );
+		log( 'drawElements', arguments );
 	} );
 
 	window.max = 100000000;
