@@ -13,22 +13,48 @@
 ( function() {
 
 	function log() {
-
+		console.log( arguments );
 	}
 
-	function _h ( f, c ) {
+	function _h ( f, pre, post ) {
 		return function () {
-			var args = c.apply( this, arguments ) || arguments;
-			return f.apply( this, args );
+			var args = pre.apply( this, arguments ) || arguments;
+			var res = f.apply( this, args );
+			return post ? post( res ) : res;
 		};
 	}
 
+	WebGLRenderingContext.prototype._guidBufferCount = 0;
+	WebGLRenderingContext.prototype._guidProgramCount = 0;
+
+	WebGLRenderingContext.prototype.createBuffer = _h( 
+		WebGLRenderingContext.prototype.createBuffer, 
+		function () {
+			log( 'createBuffer', arguments )
+		},
+		function( buffer ) {
+			buffer._guid = ++WebGLRenderingContext.prototype._guidBufferCount
+			return buffer;
+		}
+	);
+
 	WebGLRenderingContext.prototype.bindBuffer = _h( WebGLRenderingContext.prototype.bindBuffer, function () {
-		log( 'bindBuffer', arguments )
+		log( 'bindBuffer', arguments[ 0 ], arguments[ 1 ]._guid )
 	} );
 
+	WebGLRenderingContext.prototype.createProgram = _h( 
+		WebGLRenderingContext.prototype.createProgram, 
+		function () {
+			log( 'createProgram', arguments )
+		},
+		function( program ) {
+			program._guid = ++WebGLRenderingContext.prototype._guidProgramCount
+			return program;
+		}
+	);
+
 	WebGLRenderingContext.prototype.useProgram = _h( WebGLRenderingContext.prototype.useProgram, function () {
-		log( 'useProgram', arguments )
+		log( 'useProgram', arguments[ 0 ]._guid )
 	} );
 
 	WebGLRenderingContext.prototype.getAttribLocation = _h( WebGLRenderingContext.prototype.getAttribLocation, function () {
@@ -100,6 +126,7 @@ function render() {
 		mesh.rotation.x += 0.01;
 		mesh.rotation.y += 0.01;
 	})
+	console.log( '---- RENDER ---- ' )
 	renderer.render( scene, camera );
 }
 render();
