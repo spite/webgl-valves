@@ -76,8 +76,14 @@
 	} );
 
 	WebGLRenderingContext.prototype.drawElements = _h( WebGLRenderingContext.prototype.drawElements, function () {
+		arguments[ 1 ] = Math.min( arguments[ 1 ], window.max );
 		log( 'drawElements', arguments );
+		return arguments;
 	} );
+
+	// enableVertexAttribArray/vertexAttribPointer
+	// useProgram
+	// createBuffer/bindBuffer/bufferData
 
 	window.max = 100000000;
 
