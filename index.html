@@ -13,19 +13,187 @@
 ( function() {
 
 	function log() {
-		console.log( arguments );
+		console.log.apply( console, arguments );
+	}
+
+	var instrumented = [];
+	var parameters = {};
+
+	for( var j in WebGLRenderingContext.prototype ) {
+		try {
+			if( typeof WebGLRenderingContext.prototype[ j ] === 'number' ){
+				parameters[ j ] = WebGLRenderingContext.prototype[ j ];
+			}
+		} catch( e ) {
+			//console.log( j );
+		}
 	}
 
 	function _h ( f, pre, post ) {
+		instrumented.push( f.name );
 		return function () {
 			var args = pre.apply( this, arguments ) || arguments;
 			var res = f.apply( this, args );
-			return post ? post( res ) : res;
+			var r;
+			return post ? ( r = post( res, args ), r ? r : res ) : res;
 		};
 	}
 
-	/*WebGLRenderingContext.prototype._guidBufferCount = 0;
+	WebGLRenderingContext.prototype._guidBufferCount = 0;
 	WebGLRenderingContext.prototype._guidProgramCount = 0;
+	WebGLRenderingContext.prototype._guidTextureCount = 0;
+
+	WebGLRenderingContext.prototype.clear = _h( 
+		WebGLRenderingContext.prototype.clear, 
+		function () {
+			log( 'clear', arguments[ 0 ] && this.DEPTH_BUFFER_BIT, arguments[ 0 ] && this.STENCIL_BUFFER_BIT, arguments[ 0 ] && this.COLOR_BUFFER_BIT )
+		}
+	);
+
+	WebGLRenderingContext.prototype.getExtension = _h( 
+		WebGLRenderingContext.prototype.getExtension, 
+		function() {},
+		function( res, arguments ) {
+			log( 'getExtension', arguments[ 0 ], '->', res )
+		}
+	);
+
+	function getParameter( num ) {
+		for( var j in parameters ) { 
+			if( parameters[ j ] === num ) {
+				return j;
+			}
+		}
+		throw new Error()
+	}
+
+	WebGLRenderingContext.prototype.getParameter = _h( 
+		WebGLRenderingContext.prototype.getParameter, 
+		function() {},
+		function ( res, arguments ) {
+			log( 'getParameter', getParameter( arguments[ 0 ] ), '->', res );
+		}
+	);
+
+	WebGLRenderingContext.prototype.enable = _h( 
+		WebGLRenderingContext.prototype.enable, 
+		function () {
+			log( 'enable', getParameter( arguments[ 0 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.disable = _h( 
+		WebGLRenderingContext.prototype.disable, 
+		function () {
+			log( 'disable', getParameter( arguments[ 0 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.frontFace = _h( 
+		WebGLRenderingContext.prototype.frontFace, 
+		function () {
+			log( 'frontFace', getParameter( arguments[ 0 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.cullFace = _h( 
+		WebGLRenderingContext.prototype.cullFace, 
+		function () {
+			log( 'cullFace', getParameter( arguments[ 0 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.clearColor = _h( 
+		WebGLRenderingContext.prototype.clearColor, 
+		function () {
+			log( 'clearColor', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ], arguments[ 3 ] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.clearDepth = _h( 
+		WebGLRenderingContext.prototype.clearDepth, 
+		function () {
+			log( 'clearDepth', arguments[ 0] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.clearStencil = _h( 
+		WebGLRenderingContext.prototype.clearStencil, 
+		function () {
+			log( 'clearStencil', arguments[ 0] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.depthFunc = _h( 
+		WebGLRenderingContext.prototype.depthFunc, 
+		function () {
+			log( 'depthFunc', getParameter( arguments[ 0 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.blendEquation = _h( 
+		WebGLRenderingContext.prototype.blendEquation, 
+		function () {
+			log( 'blendEquation', getParameter( arguments[ 0 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.blendFunc = _h( 
+		WebGLRenderingContext.prototype.blendFunc, 
+		function () {
+			log( 'blendFunc', getParameter( arguments[ 0 ] ), getParameter( arguments[ 1 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.blendEquationSeparate = _h( 
+		WebGLRenderingContext.prototype.blendEquationSeparate, 
+		function () {
+			log( 'blendEquationSeparate', getParameter( arguments[ 0 ] ), getParameter( arguments[ 1 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.blendFuncSeparate = _h( 
+		WebGLRenderingContext.prototype.blendFuncSeparate, 
+		function () {
+			log( 'blendFuncSeparate', getParameter( arguments[ 0 ] ), getParameter( arguments[ 1 ] ), getParameter( arguments[ 2 ] ), getParameter( arguments[ 3 ] ) );
+		}
+	);
+
+	WebGLRenderingContext.prototype.scissor = _h( 
+		WebGLRenderingContext.prototype.scissor, 
+		function () {
+			log( 'scissor', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ], arguments[ 3 ] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.viewport = _h( 
+		WebGLRenderingContext.prototype.viewport, 
+		function () {
+			log( 'viewport', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ], arguments[ 3 ] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.depthMask = _h( 
+		WebGLRenderingContext.prototype.depthMask, 
+		function () {
+			log( 'depthMask', arguments[ 0 ] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.colorMask = _h( 
+		WebGLRenderingContext.prototype.colorMask, 
+		function () {
+			log( 'colorMask', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ], arguments[ 3 ] );
+		}
+	);
+
+	WebGLRenderingContext.prototype.getShaderPrecisionFormat = _h( 
+		WebGLRenderingContext.prototype.getShaderPrecisionFormat, 
+		function(){},
+		function( res, arguments ) {
+			log( 'getShaderPrecisionFormat', getParameter( arguments[ 0 ] ), getParameter( arguments[ 1 ] ), '->', res );
+		}
+	);
 
 	WebGLRenderingContext.prototype.createBuffer = _h( 
 		WebGLRenderingContext.prototype.createBuffer, 
@@ -40,7 +208,38 @@
 	);
 
 	WebGLRenderingContext.prototype.bindBuffer = _h( WebGLRenderingContext.prototype.bindBuffer, function () {
-		log( 'bindBuffer', arguments[ 0 ], arguments[ 1 ]._guid )
+		log( 'bindBuffer', getParameter( arguments[ 0 ] ), arguments[ 1 ]._guid )
+	} );
+
+	WebGLRenderingContext.prototype.bufferData = _h( WebGLRenderingContext.prototype.bufferData, function () {
+		log( 'bufferData', getParameter( arguments[ 0 ] ), '[data]', getParameter( arguments[ 2 ] ) )
+	} );
+
+	WebGLRenderingContext.prototype.createTexture = _h( 
+		WebGLRenderingContext.prototype.createTexture, 
+		function () {
+			//log( 'createTexture', arguments )
+		},
+		function( res, arguments ) {
+			res._guid = ++WebGLRenderingContext.prototype._guidTextureCount
+			log( 'createTexture', '->', res._guid )
+			return res;
+		}
+	);
+
+	WebGLRenderingContext.prototype.bindTexture = _h( 
+		WebGLRenderingContext.prototype.bindTexture, 
+		function () {
+			log( 'bindTexture', getParameter( arguments[ 0 ] ), arguments[ 1 ]._guid )
+		} 
+	);
+
+	WebGLRenderingContext.prototype.texParameteri = _h( WebGLRenderingContext.prototype.texParameteri, function () {
+		log( 'texParameteri', getParameter( arguments[ 0 ] ), getParameter( arguments[ 1 ] ), getParameter( arguments[ 2 ] ) )
+	} );
+
+	WebGLRenderingContext.prototype.texImage2D = _h( WebGLRenderingContext.prototype.texImage2D, function () {
+		log( 'texImage2D', getParameter( arguments[ 0 ] ), arguments[ 1 ], getParameter( arguments[ 2 ] ), arguments[ 3 ] + 'x' + arguments[ 4 ], arguments[ 5 ], getParameter( arguments[ 6 ] ), getParameter( arguments[ 7 ]) )
 	} );
 
 	WebGLRenderingContext.prototype.createProgram = _h( 
@@ -55,6 +254,10 @@
 		}
 	);
 
+	WebGLRenderingContext.prototype.createShader = _h( WebGLRenderingContext.prototype.createShader, function () {
+		log( 'createShader', getParameter( arguments[ 0 ] ) )
+	} );
+
 	WebGLRenderingContext.prototype.useProgram = _h( WebGLRenderingContext.prototype.useProgram, function () {
 		log( 'useProgram', arguments[ 0 ]._guid )
 	} );
@@ -63,9 +266,7 @@
 		WebGLRenderingContext.prototype.getAttribLocation, 
 		function () {
 			log( 'getAttribLocation', arguments )
-		},
-		function( program ) {
-		}	
+		}
 	);
 
 	WebGLRenderingContext.prototype.vertexAttribPointer = _h( WebGLRenderingContext.prototype.vertexAttribPointer, function () {
@@ -92,10 +293,10 @@
 	// useProgram
 	// createBuffer/bindBuffer/bufferData
 
-	window.max = 100000000;*/
+	window.max = 100000000;
 
 	for( var j in WebGLRenderingContext.prototype ) {
-		if( j !== 'drawArrays' && j !== 'drawElements' ) {
+		if( instrumented.indexOf( j ) === -1 ) {
 			try {
 				if( typeof WebGLRenderingContext.prototype[ j ] === 'function' ){
 
@@ -114,22 +315,6 @@
 			}
 		}
 	}
-
-	WebGLRenderingContext.prototype.drawArrays = _h( 
-		WebGLRenderingContext.prototype.drawArrays, 
-		function() {
-			log( '-- drawArrays --')
-			//debugger;
-		}
-	)
-
-	WebGLRenderingContext.prototype.drawElement = _h( 
-		WebGLRenderingContext.prototype.drawElement, 
-		function() {
-			log( '-- drawElements --')
-			//debugger;
-		}
-	)
 
 })();
 
