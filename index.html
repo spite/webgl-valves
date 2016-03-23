@@ -24,16 +24,17 @@
 		};
 	}
 
-	WebGLRenderingContext.prototype._guidBufferCount = 0;
+	/*WebGLRenderingContext.prototype._guidBufferCount = 0;
 	WebGLRenderingContext.prototype._guidProgramCount = 0;
 
 	WebGLRenderingContext.prototype.createBuffer = _h( 
 		WebGLRenderingContext.prototype.createBuffer, 
 		function () {
-			log( 'createBuffer', arguments )
+			//log( 'createBuffer', arguments )
 		},
 		function( buffer ) {
 			buffer._guid = ++WebGLRenderingContext.prototype._guidBufferCount
+			log( 'createBuffer', buffer._guid )
 			return buffer;
 		}
 	);
@@ -45,10 +46,11 @@
 	WebGLRenderingContext.prototype.createProgram = _h( 
 		WebGLRenderingContext.prototype.createProgram, 
 		function () {
-			log( 'createProgram', arguments )
+			//log( 'createProgram', arguments )
 		},
 		function( program ) {
 			program._guid = ++WebGLRenderingContext.prototype._guidProgramCount
+			log( 'createProgram', program._guid )
 			return program;
 		}
 	);
@@ -57,9 +59,14 @@
 		log( 'useProgram', arguments[ 0 ]._guid )
 	} );
 
-	WebGLRenderingContext.prototype.getAttribLocation = _h( WebGLRenderingContext.prototype.getAttribLocation, function () {
-		log( 'getAttribLocation', arguments )
-	} );
+	WebGLRenderingContext.prototype.getAttribLocation = _h( 
+		WebGLRenderingContext.prototype.getAttribLocation, 
+		function () {
+			log( 'getAttribLocation', arguments )
+		},
+		function( program ) {
+		}	
+	);
 
 	WebGLRenderingContext.prototype.vertexAttribPointer = _h( WebGLRenderingContext.prototype.vertexAttribPointer, function () {
 		log( 'vertexAttribPointer', arguments )
@@ -85,7 +92,44 @@
 	// useProgram
 	// createBuffer/bindBuffer/bufferData
 
-	window.max = 100000000;
+	window.max = 100000000;*/
+
+	for( var j in WebGLRenderingContext.prototype ) {
+		if( j !== 'drawArrays' && j !== 'drawElements' ) {
+			try {
+				if( typeof WebGLRenderingContext.prototype[ j ] === 'function' ){
+
+					( function( id ) { 
+					WebGLRenderingContext.prototype[ j ] = _h( 
+						WebGLRenderingContext.prototype[ j ], 
+						function() {
+							log( id, arguments );
+						}
+					);
+					})( j );
+
+				}
+			} catch( e ) {
+				//console.log( j );
+			}
+		}
+	}
+
+	WebGLRenderingContext.prototype.drawArrays = _h( 
+		WebGLRenderingContext.prototype.drawArrays, 
+		function() {
+			log( '-- drawArrays --')
+			//debugger;
+		}
+	)
+
+	WebGLRenderingContext.prototype.drawElement = _h( 
+		WebGLRenderingContext.prototype.drawElement, 
+		function() {
+			log( '-- drawElements --')
+			//debugger;
+		}
+	)
 
 })();
 
@@ -112,9 +156,9 @@ geometries.push( new THREE.BoxGeometry( 1, 1, 1, 10, 10, 10 ) );
 geometries.push( new THREE.TorusKnotGeometry( 1, .3, 100, 16 ) );
 
 var materials = [];
-materials.push( new THREE.MeshNormalMaterial( { wireframe: true } ) );
-materials.push( new THREE.MeshBasicMaterial( { color: 0xb70000, wireframe: true } ) );
-materials.push( new THREE.MeshBasicMaterial( { color: 0x0000b7, wireframe: true } ) );
+materials.push( new THREE.MeshNormalMaterial( { wireframe: false } ) );
+materials.push( new THREE.MeshBasicMaterial( { color: 0xb70000, wireframe: false } ) );
+materials.push( new THREE.MeshBasicMaterial( { color: 0x0000b7, wireframe: false } ) );
 
 var meshes = [];
 var r = 10
@@ -140,8 +184,10 @@ function render() {
 		mesh.rotation.x += 0.01;
 		mesh.rotation.y += 0.01;
 	})
-	console.log( '---- RENDER ---- ' )
+	console.log( '---- START RENDER ---- ' )
 	renderer.render( scene, camera );
+	console.log( '---- FINISH RENDER ---- ' )
+	debugger
 }
 render();
 
