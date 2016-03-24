@@ -42,6 +42,8 @@
 	WebGLRenderingContext.prototype._guidBufferCount = 0;
 	WebGLRenderingContext.prototype._guidProgramCount = 0;
 	WebGLRenderingContext.prototype._guidTextureCount = 0;
+	WebGLRenderingContext.prototype._guidShaderCount = 0;
+	WebGLRenderingContext.prototype._guidUniformCount = 0;
 
 	WebGLRenderingContext.prototype.clear = _h( 
 		WebGLRenderingContext.prototype.clear, 
@@ -212,7 +214,7 @@
 	} );
 
 	WebGLRenderingContext.prototype.bufferData = _h( WebGLRenderingContext.prototype.bufferData, function () {
-		log( 'bufferData', getParameter( arguments[ 0 ] ), '[data]', getParameter( arguments[ 2 ] ) )
+		log( 'bufferData', getParameter( arguments[ 0 ] ), '[data:' + typeof( arguments[ 1 ] ) + ':' + arguments[ 1 ].length + ']', getParameter( arguments[ 2 ] ) )
 	} );
 
 	WebGLRenderingContext.prototype.createTexture = _h( 
@@ -244,42 +246,155 @@
 
 	WebGLRenderingContext.prototype.createProgram = _h( 
 		WebGLRenderingContext.prototype.createProgram, 
-		function () {
-			//log( 'createProgram', arguments )
-		},
-		function( program ) {
-			program._guid = ++WebGLRenderingContext.prototype._guidProgramCount
-			log( 'createProgram', program._guid )
-			return program;
+		function(){},
+		function( res, arguments ) {
+			res._guid = ++WebGLRenderingContext.prototype._guidProgramCount
+			log( 'createProgram', '->', res._guid )
+			return res;
 		}
 	);
 
-	WebGLRenderingContext.prototype.createShader = _h( WebGLRenderingContext.prototype.createShader, function () {
-		log( 'createShader', getParameter( arguments[ 0 ] ) )
+	WebGLRenderingContext.prototype.createShader = _h( 
+		WebGLRenderingContext.prototype.createShader,
+		function(){},
+		function( res, arguments ) {
+			res._guid = ++WebGLRenderingContext.prototype._guidShaderCount
+			log( 'createShader', getParameter( arguments[ 0 ] ), '->', res._guid )
+			return res;
+		}
+	);
+
+	WebGLRenderingContext.prototype.shaderSource = _h( 
+		WebGLRenderingContext.prototype.shaderSource,
+		function(){
+			log( 'shaderSource', arguments[ 0 ]._guid, '[data]' )
+		}
+	);
+
+	WebGLRenderingContext.prototype.compileShader = _h( 
+		WebGLRenderingContext.prototype.compileShader,
+		function(){
+			log( 'compileShader', arguments[ 0 ]._guid )
+		}
+	);
+
+	WebGLRenderingContext.prototype.getShaderParameter = _h( 
+		WebGLRenderingContext.prototype.getShaderParameter,
+		function(){
+			log( 'getShaderParameter', arguments[ 0 ]._guid, getParameter( arguments[ 1 ] ) )
+		}
+	);
+
+	WebGLRenderingContext.prototype.getShaderInfoLog = _h( 
+		WebGLRenderingContext.prototype.getShaderInfoLog,
+		function(){},
+		function( res, arguments ){
+			log( 'getShaderInfoLog', arguments[ 0 ]._guid, '->', res )
+		}
+	);
+
+	WebGLRenderingContext.prototype.attachShader = _h( 
+		WebGLRenderingContext.prototype.attachShader,
+		function(){
+			log( 'attachShader', arguments[ 0 ]._guid, arguments[ 1 ]._guid )
+		}
+	);
+
+	WebGLRenderingContext.prototype.linkProgram = _h( WebGLRenderingContext.prototype.linkProgram, function () {
+		log( 'linkProgram', arguments[ 0 ]._guid )
+	} );
+
+	WebGLRenderingContext.prototype.getProgramInfoLog = _h(
+		WebGLRenderingContext.prototype.getProgramInfoLog, 
+		function() {},
+		function ( res, arguments ) {
+			log( 'getProgramInfoLog', arguments[ 0 ]._guid, '->', res )
+		} 
+	);
+
+	WebGLRenderingContext.prototype.deleteShader = _h( WebGLRenderingContext.prototype.deleteShader, function () {
+		log( 'deleteShader', arguments[ 0 ]._guid )
 	} );
 
 	WebGLRenderingContext.prototype.useProgram = _h( WebGLRenderingContext.prototype.useProgram, function () {
 		log( 'useProgram', arguments[ 0 ]._guid )
 	} );
 
-	WebGLRenderingContext.prototype.getAttribLocation = _h( 
-		WebGLRenderingContext.prototype.getAttribLocation, 
-		function () {
-			log( 'getAttribLocation', arguments )
+	WebGLRenderingContext.prototype.getProgramParameter = _h( 
+		WebGLRenderingContext.prototype.getProgramParameter,
+		function() {},
+		function( res, arguments ){
+			log( 'getProgramParameter', arguments[ 0 ]._guid, getParameter( arguments[ 1 ] ), '->', res )
 		}
 	);
 
+	WebGLRenderingContext.prototype.getActiveAttrib = _h( 
+		WebGLRenderingContext.prototype.getActiveAttrib,
+		function() {},
+		function( res, arguments ){
+			log( 'getActiveAttrib', arguments[ 0 ]._guid, arguments[ 1 ], '->', res )
+		}
+	);
+
+	WebGLRenderingContext.prototype.getAttribLocation = _h( 
+		WebGLRenderingContext.prototype.getAttribLocation, 
+		function () {
+			log( 'getAttribLocation', arguments[ 0 ]._guid, arguments[ 1 ] )
+		}
+	);
+
+	WebGLRenderingContext.prototype.getActiveUniform = _h( 
+		WebGLRenderingContext.prototype.getActiveUniform, 
+		function () {
+			log( 'getActiveUniform', arguments[ 0 ]._guid, arguments[ 1 ] )
+		}
+	);
+
+	WebGLRenderingContext.prototype.getUniformLocation = _h( 
+		WebGLRenderingContext.prototype.getUniformLocation, 
+		function(){},
+		function( res, arguments ) {
+			res._guid = ++WebGLRenderingContext.prototype._guidUniformCount
+			log( 'getUniformLocation', arguments[ 0 ]._guid, arguments[ 1 ], '->', res._guid )
+			return res;
+		}
+	);
+
+	var uniformMethods = [ 
+		'uniform1f', 'uniform1fv', 'uniform1i', 'uniform1iv',
+		'uniform2f', 'uniform2fv', 'uniform2i', 'uniform2iv',
+		'uniform3f', 'uniform3fv', 'uniform3i', 'uniform3iv',
+		'uniform4f', 'uniform4fv', 'uniform4i', 'uniform4iv',
+		'uniformMatrix2fv', 'uniformMatrix3fv', 'uniformMatrix4fv'
+	];
+
+	uniformMethods.forEach( function( u ) {
+
+		WebGLRenderingContext.prototype[ u ] = _h(
+			WebGLRenderingContext.prototype[ u ],
+			function() { 
+				log( u, arguments[ 0 ]._guid, Array.prototype.slice.call( arguments, 1 ) )
+			}
+		);
+
+	} );
+
+
 	WebGLRenderingContext.prototype.vertexAttribPointer = _h( WebGLRenderingContext.prototype.vertexAttribPointer, function () {
-		log( 'vertexAttribPointer', arguments )
+		log( 'vertexAttribPointer', arguments[ 0 ], arguments[ 1 ], getParameter( arguments[ 2 ] ), arguments[ 3 ] )
 	} );
 
 	WebGLRenderingContext.prototype.enableVertexAttribArray = _h( WebGLRenderingContext.prototype.enableVertexAttribArray, function () {
-		log( 'enableVertexAttribArray', arguments )
+		log( 'enableVertexAttribArray', arguments[ 0 ] )
+	} );
+
+	WebGLRenderingContext.prototype.disableVertexAttribArray = _h( WebGLRenderingContext.prototype.disableVertexAttribArray, function () {
+		log( 'disableVertexAttribArray', arguments[ 0 ] )
 	} );
 
 	WebGLRenderingContext.prototype.drawArrays = _h( WebGLRenderingContext.prototype.drawArrays, function () {
 		arguments[ 2 ] = Math.min( arguments[ 2 ], window.max );
-		log( 'drawArrays', arguments )
+		log( 'drawArrays', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ] )
 		return arguments;
 	} );
 
