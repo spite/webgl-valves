@@ -35,7 +35,7 @@
 			var args = pre.apply( this, arguments ) || arguments;
 			var res = f.apply( this, args );
 			var r;
-			return post ? ( r = post( res, args ), r ? r : res ) : res;
+			return post ? ( r = post.apply( this, [ res, args ] ), r ? r : res ) : res;
 		};
 	}
 
