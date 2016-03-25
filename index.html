@@ -44,6 +44,7 @@
 	WebGLRenderingContext.prototype._guidTextureCount = 0;
 	WebGLRenderingContext.prototype._guidShaderCount = 0;
 	WebGLRenderingContext.prototype._guidUniformCount = 0;
+	WebGLRenderingContext.prototype._attribsMap = {};
 
 	WebGLRenderingContext.prototype.clear = _h( 
 		WebGLRenderingContext.prototype.clear, 
@@ -338,8 +339,10 @@
 
 	WebGLRenderingContext.prototype.getAttribLocation = _h( 
 		WebGLRenderingContext.prototype.getAttribLocation, 
-		function () {
-			log( 'getAttribLocation', arguments[ 0 ]._guid, arguments[ 1 ] )
+		function() {},
+		function( res, arguments ) {
+			this._attribsMap[ res ] = arguments[ 1 ]
+			log( 'getAttribLocation', arguments[ 0 ]._guid, arguments[ 1 ], '->', res )
 		}
 	);
 
@@ -355,7 +358,8 @@
 		function(){},
 		function( res, arguments ) {
 			res._guid = ++WebGLRenderingContext.prototype._guidUniformCount
-			log( 'getUniformLocation', arguments[ 0 ]._guid, arguments[ 1 ], '->', res._guid )
+			res._name = arguments[ 1 ]
+			log( 'getUniformLocation', arguments[ 0 ]._guid, '"' + arguments[ 1 ] + '"', '->', res._guid )
 			return res;
 		}
 	);
@@ -373,7 +377,7 @@
 		WebGLRenderingContext.prototype[ u ] = _h(
 			WebGLRenderingContext.prototype[ u ],
 			function() { 
-				log( u, arguments[ 0 ]._guid, Array.prototype.slice.call( arguments, 1 ) )
+				log( u, arguments[ 0 ]._guid, '"' + arguments[ 0 ]._name + '"', Array.prototype.slice.call( arguments, 1 ) )
 			}
 		);
 
@@ -381,26 +385,26 @@
 
 
 	WebGLRenderingContext.prototype.vertexAttribPointer = _h( WebGLRenderingContext.prototype.vertexAttribPointer, function () {
-		log( 'vertexAttribPointer', arguments[ 0 ], arguments[ 1 ], getParameter( arguments[ 2 ] ), arguments[ 3 ] )
+		log( 'vertexAttribPointer', arguments[ 0 ] + ' "' + this._attribsMap[ arguments[ 0 ] ] + '"', arguments[ 1 ], getParameter( arguments[ 2 ] ), arguments[ 3 ] )
 	} );
 
 	WebGLRenderingContext.prototype.enableVertexAttribArray = _h( WebGLRenderingContext.prototype.enableVertexAttribArray, function () {
-		log( 'enableVertexAttribArray', arguments[ 0 ] )
+		log( 'enableVertexAttribArray', arguments[ 0 ], '"' + this._attribsMap[ arguments[ 0 ] ] + '"' )
 	} );
 
 	WebGLRenderingContext.prototype.disableVertexAttribArray = _h( WebGLRenderingContext.prototype.disableVertexAttribArray, function () {
-		log( 'disableVertexAttribArray', arguments[ 0 ] )
+		log( 'disableVertexAttribArray', arguments[ 0 ], '"' + this._attribsMap[ arguments[ 0 ] ] + '"' )
 	} );
 
 	WebGLRenderingContext.prototype.drawArrays = _h( WebGLRenderingContext.prototype.drawArrays, function () {
 		arguments[ 2 ] = Math.min( arguments[ 2 ], window.max );
-		log( 'drawArrays', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ] )
+		log( ' -- drawArrays', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ] )
 		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.drawElements = _h( WebGLRenderingContext.prototype.drawElements, function () {
 		arguments[ 1 ] = Math.min( arguments[ 1 ], window.max );
-		log( 'drawElements', arguments );
+		log( ' -- drawElements', arguments );
 		return arguments;
 	} );
 
