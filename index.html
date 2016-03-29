@@ -417,12 +417,14 @@
 	WebGLRenderingContext.prototype.drawArrays = _h( WebGLRenderingContext.prototype.drawArrays, function () {
 		arguments[ 2 ] = Math.min( arguments[ 2 ], window.max );
 		log( ' -- drawArrays', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ] )
+		console.log( this.getParameter( this.CURRENT_PROGRAM ) );
 		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.drawElements = _h( WebGLRenderingContext.prototype.drawElements, function () {
 		arguments[ 1 ] = Math.min( arguments[ 1 ], window.max );
 		log( ' -- drawElements', arguments );
+		console.log( this.getParameter( this.CURRENT_PROGRAM ) );
 		return arguments;
 	} );
 
