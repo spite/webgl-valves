@@ -67,7 +67,8 @@
 				return j;
 			}
 		}
-		throw new Error()
+		console.error( 'Could not find parameter ' + num )
+		//throw new Error( num )
 	}
 
 	WebGLRenderingContext.prototype.getParameter = _h( 
@@ -357,9 +358,13 @@
 		WebGLRenderingContext.prototype.getUniformLocation, 
 		function(){},
 		function( res, arguments ) {
-			res._guid = ++WebGLRenderingContext.prototype._guidUniformCount
-			res._name = arguments[ 1 ]
-			log( 'getUniformLocation', arguments[ 0 ]._guid, '"' + arguments[ 1 ] + '"', '->', res._guid )
+			if( res ) {
+				res._guid = ++WebGLRenderingContext.prototype._guidUniformCount
+				res._name = arguments[ 1 ]
+				log( 'getUniformLocation', arguments[ 0 ]._guid, '"' + arguments[ 1 ] + '"', '->', res._guid )
+			} else {
+				console.error( 'Could not find uniform ' + arguments[ 1 ] )
+			}
 			return res;
 		}
 	);
