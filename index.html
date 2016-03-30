@@ -39,6 +39,8 @@
 		};
 	}
 
+	WebGLRenderingContext.prototype._currentAttributes = new Set();
+
 	WebGLRenderingContext.prototype._guidBufferCount = 0;
 	WebGLRenderingContext.prototype._guidProgramCount = 0;
 	WebGLRenderingContext.prototype._guidTextureCount = 0;
@@ -408,23 +410,25 @@
 
 	WebGLRenderingContext.prototype.enableVertexAttribArray = _h( WebGLRenderingContext.prototype.enableVertexAttribArray, function () {
 		log( 'enableVertexAttribArray', arguments[ 0 ], '"' + this._attribsMap[ arguments[ 0 ] ] + '"' )
+		this._currentAttributes.add( arguments[ 0 ] );
 	} );
 
 	WebGLRenderingContext.prototype.disableVertexAttribArray = _h( WebGLRenderingContext.prototype.disableVertexAttribArray, function () {
 		log( 'disableVertexAttribArray', arguments[ 0 ], '"' + this._attribsMap[ arguments[ 0 ] ] + '"' )
+		this._currentAttributes.delete( arguments[ 0 ] );
 	} );
 
 	WebGLRenderingContext.prototype.drawArrays = _h( WebGLRenderingContext.prototype.drawArrays, function () {
 		arguments[ 2 ] = Math.min( arguments[ 2 ], window.max );
 		log( ' -- drawArrays', arguments[ 0 ], arguments[ 1 ], arguments[ 2 ] )
-		console.log( this.getParameter( this.CURRENT_PROGRAM ) );
+		console.log( this.getParameter( this.CURRENT_PROGRAM ), this._currentAttributes );
 		return arguments;
 	} );
 
 	WebGLRenderingContext.prototype.drawElements = _h( WebGLRenderingContext.prototype.drawElements, function () {
 		arguments[ 1 ] = Math.min( arguments[ 1 ], window.max );
 		log( ' -- drawElements', arguments );
-		console.log( this.getParameter( this.CURRENT_PROGRAM ) );
+		console.log( this.getParameter( this.CURRENT_PROGRAM ), this._currentAttributes );
 		return arguments;
 	} );
 
@@ -484,7 +488,7 @@ geometries.push( new THREE.TorusKnotGeometry( 1, .3, 100, 16 ) );
 
 var materials = [];
 materials.push( new THREE.MeshNormalMaterial( { wireframe: false } ) );
-//materials.push( new THREE.MeshBasicMaterial( { color: 0xb70000, wireframe: false } ) );
+materials.push( new THREE.MeshBasicMaterial( { color: 0xb70000, wireframe: true } ) );
 //materials.push( new THREE.MeshBasicMaterial( { color: 0x0000b7, wireframe: false } ) );
 
 var meshes = [];
