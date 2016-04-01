@@ -221,6 +221,10 @@
 		log( 'bufferData', getParameter( arguments[ 0 ] ), '[data:' + typeof( arguments[ 1 ] ) + ':' + arguments[ 1 ].length + ']', getParameter( arguments[ 2 ] ) )
 	} );
 
+	WebGLRenderingContext.prototype.bufferSubData = _h( WebGLRenderingContext.prototype.bufferSubData, function () {
+		log( 'bufferSubData', getParameter( arguments[ 0 ] ), aguments[ 1 ], '[data:' + typeof( arguments[ 2 ] ) + ':' + arguments[ 2 ].length + ']' )
+	} );
+
 	WebGLRenderingContext.prototype.createTexture = _h( 
 		WebGLRenderingContext.prototype.createTexture, 
 		function () {
@@ -434,7 +438,7 @@
 
 	// enableVertexAttribArray/vertexAttribPointer
 	// useProgram
-	// createBuffer/bindBuffer/bufferData
+	// createBuffer/bindBuffer/bufferData//
 
 	window.max = 100000000;
 
