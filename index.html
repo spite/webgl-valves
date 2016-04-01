@@ -446,7 +446,7 @@
 		if( instrumented.indexOf( j ) === -1 ) {
 			try {
 				if( typeof WebGLRenderingContext.prototype[ j ] === 'function' ){
-
+					console.warn( j + ' not instrumented' );
 					( function( id ) { 
 					WebGLRenderingContext.prototype[ j ] = _h( 
 						WebGLRenderingContext.prototype[ j ], 
