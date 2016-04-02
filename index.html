@@ -252,6 +252,22 @@
 		log( 'texImage2D', getParameter( arguments[ 0 ] ), arguments[ 1 ], getParameter( arguments[ 2 ] ), arguments[ 3 ] + 'x' + arguments[ 4 ], arguments[ 5 ], getParameter( arguments[ 6 ] ), getParameter( arguments[ 7 ]) )
 	} );
 
+	WebGLRenderingContext.prototype.copyTexImage2D = _h( WebGLRenderingContext.prototype.copyTexImage2D, function () {
+		log( 'copyTexImage2D', arguments )
+	} );
+
+	WebGLRenderingContext.prototype.copyTexSubImage2D = _h( WebGLRenderingContext.prototype.copyTexSubImage2D, function () {
+		log( 'copyTexSubImage2D', arguments )
+	} );
+
+	WebGLRenderingContext.prototype.compressedTexImage2D = _h( WebGLRenderingContext.prototype.compressedTexImage2D, function () {
+		log( 'compressedTexImage2D', arguments )
+	} );
+
+	WebGLRenderingContext.prototype.compressedTexSubImage2D = _h( WebGLRenderingContext.prototype.compressedTexSubImage2D, function () {
+		log( 'compressedTexSubImage2D', arguments )
+	} );
+
 	WebGLRenderingContext.prototype.createProgram = _h( 
 		WebGLRenderingContext.prototype.createProgram, 
 		function(){},
