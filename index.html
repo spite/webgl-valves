@@ -253,11 +253,11 @@
 	} );
 
 	WebGLRenderingContext.prototype.copyTexImage2D = _h( WebGLRenderingContext.prototype.copyTexImage2D, function () {
-		log( 'copyTexImage2D', arguments )
+		log( 'copyTexImage2D', getParameter( arguments[ 0 ] ), arguments[ 1 ], getParameter( arguments[ 2 ] ), arguments[ 3 ], arguments[ 4 ], arguments[ 5 ], arguments[ 6 ], arguments[ 7 ] )
 	} );
 
 	WebGLRenderingContext.prototype.copyTexSubImage2D = _h( WebGLRenderingContext.prototype.copyTexSubImage2D, function () {
-		log( 'copyTexSubImage2D', arguments )
+		log( 'copyTexSubImage2D', getParameter( arguments[ 0 ] ), arguments[ 1 ], arguments[ 2 ], arguments[ 3 ], arguments[ 4 ], arguments[ 5 ], arguments[ 6 ], arguments[ 7 ] )
 	} );
 
 	WebGLRenderingContext.prototype.compressedTexImage2D = _h( WebGLRenderingContext.prototype.compressedTexImage2D, function () {
