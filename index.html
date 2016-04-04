@@ -3,16 +3,16 @@
 <head>
 	<meta charset="utf-8">
 	<title>webgl valves</title>	
+	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
 	<style>
-	*{margin:0;padding:0;box-model:border-box;}
+	*{margin:0;padding:0; box-sizing:border-box;font-family: roboto;}
+	.label{ padding: 5px; position: absolute; left: 0; top: 0; color: white;}
 	</style>
 </head>
 
 <script>
 
 ( function() {
-
-	return;
 
 	function log() {
 		console.log.apply( console, arguments );
@@ -40,6 +40,27 @@
 			return post ? ( r = post.apply( this, [ res, args ] ), r ? r : res ) : res;
 		};
 	}
+
+	var contexts = [];
+
+	HTMLCanvasElement.prototype.getContext = _h( HTMLCanvasElement.prototype.getContext, 
+		function() {
+
+		},
+		function( res, args ) {
+			if( args[ 0 ] === 'webgl' ) {
+				contexts.push( { 
+					gl: res,
+					queryExt: res.getExtension("EXT_disjoint_timer_query"),
+					queries: []
+				} );
+			}
+		}
+	);
+
+	window.contexts = contexts;
+
+	return;
 
 	WebGLRenderingContext.prototype._currentAttributes = new Set();
 
@@ -485,6 +506,7 @@
 
 </script>
 
+<script src="ric-polyfill.js" ></script>
 <script src="three.js" ></script>
 
 <body>
@@ -500,11 +522,12 @@ camera.position.z = 15;
 
 var renderer = new THREE.WebGLRenderer( { antialias: true } );
 
-var queryExt = renderer.context.getExtension("EXT_disjoint_timer_query");
-var queries = [];
-
 renderer.setPixelRatio( window.devicePixelRatio )
 document.body.appendChild( renderer.domElement );
+
+var label = document.createElement( 'div' );
+label.className = 'label';
+document.body.appendChild( label );
 
 var geometries = [];
 geometries.push( new THREE.IcosahedronGeometry( 1, 3 ) );
@@ -518,7 +541,8 @@ materials.push( new THREE.MeshBasicMaterial( { color: 0xb70000, wireframe: true 
 
 var meshes = [];
 var r = 10
-for( var j =0 ; j< 100; j++ ) {
+var n = window.location.hash.substr(1) || 800;
+for( var j =0 ; j< n; j++ ) {
 	var mesh = new THREE.Mesh( geometries[ ~~ ( Math.random() * geometries.length ) ], materials[ ~~ ( Math.random() * materials.length ) ] );
 	mesh.position.set( ( .5 - Math.random() ) * r, ( .5 - Math.random() ) * r, ( .5 - Math.random() ) * r )
 	meshes.push( mesh );
@@ -534,40 +558,107 @@ function onWindowResize() {
 window.addEventListener( 'resize', onWindowResize );
 onWindowResize();
 
+var query = null;
+var lastTime = performance.now()
+var meanLength = 100
+var extValues = new Array( meanLength );
+var etValues = new Array( meanLength );
+var rICValues = new Array( meanLength );
+var extPtr = 0;
+var etPtr = 0;
+var rICPtr = 0;
+var res = 1;
+
+function getMean( a ) {
+
+	return a.reduce( ( a,b ) => a + b, 0 ) / a.length;
+
+}
+
+function idle( deadline ) {
+	//if( deadline.didTimeout ) debugger;
+	var et = ( 1000 / 60 ) - deadline.timeRemaining();
+	rICValues[ rICPtr++ %  meanLength  ] = et;
+}
+
+var o = requestAnimationFrame;
+var rAFs = [];
+function p() {
+
+	var time = performance.now();
+	
+	var et = time - lastTime;
+	etValues[ etPtr++ %  meanLength  ] = et;
+
+	contexts.forEach( function( context ) {
+		var queryExt = context.queryExt,
+			gl = context.gl;
+		if( !queryExt ) return;
+		context.queries.forEach( function( q, i ) {
+			var available = queryExt.getQueryObjectEXT(q, queryExt.QUERY_RESULT_AVAILABLE_EXT);
+			var disjoint = gl.getParameter(queryExt.GPU_DISJOINT_EXT);
+			if (available && !disjoint) {
+				var timeElapsed = queryExt.getQueryObjectEXT(q, queryExt.QUERY_RESULT_EXT);
+				extValues[ extPtr++ %  meanLength  ] = timeElapsed;
+				context.queries.splice( i, 1 );
+			}
+		})
+		query = queryExt.createQueryEXT();	
+		queryExt.beginQueryEXT(queryExt.TIME_ELAPSED_EXT, query);
+		context.query = query;
+	} );
+	
+	lastTime = performance.now(); // time ?
+
+	rAFs.forEach( function( c, i ) {
+		c();
+		rAFs.splice( i, 1 );
+	} );
+	
+	contexts.forEach( function( context ) {
+		var queryExt = context.queryExt;
+		if( !queryExt ) return;
+		queryExt.endQueryEXT(queryExt.TIME_ELAPSED_EXT);
+		context.queries.push( query );
+	} );
+
+	var timeElapsed = getMean( extValues );	
+	var et = getMean( etValues );
+	var rICet = getMean( rICValues );
+	label.innerHTML = 'EXT_disjoint_timer_query: ' + ( timeElapsed / ( 1000 * 1000 ) ).toFixed( res ) + ' ' + ( 1000000000 / timeElapsed ).toFixed( res ) + '<br/>rAF: ' + ( et ).toFixed( res ) + ' ' + ( 1000 / et ).toFixed( res ) + '<br/>rIC: ' + rICet.toFixed( res ) + ' ' + ( 1000 / rICet ).toFixed( res )
+
+	o( p );
+	requestIdleCallback( idle );
+
+}
+o( p );
+
+requestAnimationFrame = function( c ) {
+
+	rAFs.push( c );
+
+}
+
 function render() {
+
+//	console.log( '---- START RENDER ---- ' )
 	
 	requestAnimationFrame( render );
-	
+
 	meshes.forEach( function ( mesh ) {
 		mesh.rotation.x += 0.01;
 		mesh.rotation.y += 0.01;
 	})
-	
-//	console.log( '---- START RENDER ---- ' )
 
-	console.log( queries.length );
-	queries.forEach( function( q, i ) {
-		var available = queryExt.getQueryObjectEXT(q, queryExt.QUERY_RESULT_AVAILABLE_EXT);
-		var disjoint = renderer.context.getParameter(queryExt.GPU_DISJOINT_EXT);
-		if (available && !disjoint) {
-	          var timeElapsed = queryExt.getQueryObjectEXT(q, queryExt.QUERY_RESULT_EXT);
-	          console.log( ( timeElapsed / ( 1000 * 1000 ) ).toFixed( 2 ) );
-	          queries.splice( i, 1 );
-	    }
-    })
-	
-	var query = queryExt.createQueryEXT();
-	
-	queryExt.beginQueryEXT(queryExt.TIME_ELAPSED_EXT, query);
 	renderer.render( scene, camera );
-	queryExt.endQueryEXT(queryExt.TIME_ELAPSED_EXT);
-	queries.push( query );
 
 //	console.log( '---- FINISH RENDER ---- ' )
 	
-	debugger
+//	debugger
 
 }
+
+
 render();
 
 </script>
