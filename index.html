@@ -12,6 +12,8 @@
 
 ( function() {
 
+	return;
+
 	function log() {
 		console.log.apply( console, arguments );
 	}
@@ -257,7 +259,7 @@
 	} );
 
 	WebGLRenderingContext.prototype.copyTexSubImage2D = _h( WebGLRenderingContext.prototype.copyTexSubImage2D, function () {
-		log( 'copyTexSubImage2D', getParameter( arguments[ 0 ] ), arguments[ 1 ], arguments[ 2 ], arguments[ 3 ], arguments[ 4 ], arguments[ 5 ], arguments[ 6 ], arguments[ 7 ] )
+		log( 'copyTexImage2D', getParameter( arguments[ 0 ] ), arguments[ 1 ], arguments[ 2 ], arguments[ 3 ], arguments[ 4 ], arguments[ 5 ], arguments[ 6 ], arguments[ 7 ] )
 	} );
 
 	WebGLRenderingContext.prototype.compressedTexImage2D = _h( WebGLRenderingContext.prototype.compressedTexImage2D, function () {
@@ -498,6 +500,9 @@ camera.position.z = 15;
 
 var renderer = new THREE.WebGLRenderer( { antialias: true } );
 
+var queryExt = renderer.context.getExtension("EXT_disjoint_timer_query");
+var queries = [];
+
 renderer.setPixelRatio( window.devicePixelRatio )
 document.body.appendChild( renderer.domElement );
 
@@ -513,7 +518,7 @@ materials.push( new THREE.MeshBasicMaterial( { color: 0xb70000, wireframe: true 
 
 var meshes = [];
 var r = 10
-for( var j =0 ; j< 10; j++ ) {
+for( var j =0 ; j< 100; j++ ) {
 	var mesh = new THREE.Mesh( geometries[ ~~ ( Math.random() * geometries.length ) ], materials[ ~~ ( Math.random() * materials.length ) ] );
 	mesh.position.set( ( .5 - Math.random() ) * r, ( .5 - Math.random() ) * r, ( .5 - Math.random() ) * r )
 	meshes.push( mesh );
@@ -530,15 +535,38 @@ window.addEventListener( 'resize', onWindowResize );
 onWindowResize();
 
 function render() {
+	
 	requestAnimationFrame( render );
+	
 	meshes.forEach( function ( mesh ) {
 		mesh.rotation.x += 0.01;
 		mesh.rotation.y += 0.01;
 	})
-	console.log( '---- START RENDER ---- ' )
+	
+//	console.log( '---- START RENDER ---- ' )
+
+	console.log( queries.length );
+	queries.forEach( function( q, i ) {
+		var available = queryExt.getQueryObjectEXT(q, queryExt.QUERY_RESULT_AVAILABLE_EXT);
+		var disjoint = renderer.context.getParameter(queryExt.GPU_DISJOINT_EXT);
+		if (available && !disjoint) {
+	          var timeElapsed = queryExt.getQueryObjectEXT(q, queryExt.QUERY_RESULT_EXT);
+	          console.log( ( timeElapsed / ( 1000 * 1000 ) ).toFixed( 2 ) );
+	          queries.splice( i, 1 );
+	    }
+    })
+	
+	var query = queryExt.createQueryEXT();
+	
+	queryExt.beginQueryEXT(queryExt.TIME_ELAPSED_EXT, query);
 	renderer.render( scene, camera );
-	console.log( '---- FINISH RENDER ---- ' )
+	queryExt.endQueryEXT(queryExt.TIME_ELAPSED_EXT);
+	queries.push( query );
+
+//	console.log( '---- FINISH RENDER ---- ' )
+	
 	debugger
+
 }
 render();
 
